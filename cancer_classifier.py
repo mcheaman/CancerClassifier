@@ -1,5 +1,5 @@
 # Name: Mason Heaman
-# Date: November 26th, 2019
+# Date: April 12th, 2021
 # Description: A program that learns from tumor data to determine whether a given test is malignant or benign
 ###############################################################################
 # For use as dictionary keys
@@ -88,7 +88,6 @@ def average_attr(attr_list):
 def train_classifier(training_records):
     """ Return a dict containing the midpoint between averages
         among each class (malignant and benign) of each attribute.
-        (See the A5 writeup for a more complete description)
         Precondition: training_records is a list of patient record
                       dictionaries, each of which has the keys
                       in the global variable ATTRS
@@ -246,10 +245,10 @@ def check_patients(test_records, classifier):
     """
     
     # prompt user for an ID
-    ID = int(input("Enter a patient ID to see classification details:"))
+    ID = int(input("Enter a patient ID to see classification details: "))
     found = 0
     # while the user has not entered "quit":
-    while ID != "quit":
+    while ID != "quit" or ID != "q":
         for i in range(len(test_records)):
             if ID in test_records[i].values():
                  found = 1
