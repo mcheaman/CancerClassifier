@@ -102,7 +102,7 @@ def classify(training_records, test_records):
     test_labels = test_records[1]
     
     # Initialize classifier
-    clf = RandomForestClassifier(n_estimators=10,max_depth=5).fit(train_features, train_labels)
+    clf = RandomForestClassifier().fit(train_features, train_labels)
     train_labels = np.array(train_labels)
     clf.fit(train_features, train_labels)
 
