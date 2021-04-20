@@ -17,7 +17,7 @@ def make_training_set(filename):
     # Read in file
     # Separate csv into feature and label sets 
     data_set = pd.read_csv(filename)
-    features = (data_set.iloc[:, :-1].astype(float)).to_numpy()
+    features = (data_set.iloc[:, 1:-1].astype(float)).to_numpy()
     labels = ((data_set.iloc[:, -1:].astype(str)).to_numpy()).reshape(-1,1)
     #encode labels to 0-1 values for classifier training
     encode = pre.LabelEncoder()
