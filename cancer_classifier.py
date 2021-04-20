@@ -2,6 +2,9 @@
 # Date: April 12th, 2021
 # Description: A program that learns from tumor data to determine whether a given test is malignant or benign
 ###############################################################################
+import numpy as np 
+from sklearn.naive_bayes import MultinomialNB
+import sklearn.preprocessing as pre
 # For use as dictionary keys
 ATTRS = []
 ATTRS.append("ID")
@@ -18,6 +21,41 @@ ATTRS.append("fractal")
 ATTRS.append("class")
 ###############################################################################
 
+def make_data_list(filename):
+    """ Read training data from the file whose path is filename.
+        Return a list of records, where each record is a dictionary
+        containing a value for each of the 12 keys in ATTRS.
+    """
+    # COMPLETE - DO NOT MODIFY
+    training_records = []
+    labels = []
+    # Read in file
+    for line in open(filename,'r'):
+        if '#' in line:
+            continue
+        line = line.strip('\n')
+        line_list = line.split(',')
+        
+        # Create a dictionary for the line and map the attributes in
+        # ATTRS to the corresponding values in the line of the file
+        record = []
+        
+        # read patient ID as an int:
+        record.append(int(line_list[0].strip()))
+        
+        # read attributes 1 through 10 as floats:
+        for i in range(1,11):
+            record.append(float(line_list[i]))
+        
+        # read the class (label), which is "M", or "B" as a string:
+        labels.append(line_list[31].strip()) 
+
+        # Add the dictionary to a list
+        training_records.append(record)        
+
+    return training_records, labels
+
+
 
 def make_training_set(filename):
     """ Read training data from the file whose path is filename.
@@ -26,6 +64,7 @@ def make_training_set(filename):
     """
     # COMPLETE - DO NOT MODIFY
     training_records = []
+    labels = []
     # Read in file
     for line in open(filename,'r'):
         if '#' in line:
@@ -45,12 +84,12 @@ def make_training_set(filename):
             record[ATTRS[i]] = float(line_list[i])
         
         # read the class (label), which is "M", or "B" as a string:
-        record[ATTRS[11]] = line_list[31].strip() 
+        labels.append(line_list[31].strip()) 
 
         # Add the dictionary to a list
         training_records.append(record)        
 
-    return training_records
+    return training_records, labels
 
 
 def make_test_set(filename):
@@ -64,7 +103,7 @@ def make_test_set(filename):
     test_records = make_training_set(filename)
 
     for record in test_records:
-        record["prediction"] = "none"
+        record['prediction'] = 'none'
 
     return test_records
 
@@ -95,7 +134,7 @@ def train_classifier(training_records):
                        from the training set for all 10 attributes except
                        "ID" and"class".
     """
-    # TODO 1 - implement this function
+
     # create dictionaries for classifier, malignant, and benign
     classifier = {}
     malignant_list = []
@@ -164,7 +203,7 @@ def train_classifier(training_records):
     
     return classifier
 
-def classify(test_records, classifier):
+def midpoint_baseline(test_records, classifier):
     """ Use the given classifier to make a prediction for each record in
         test_records, a list of dictionary patient records with the keys in
         the global variable ATTRS. A record is classified as malignant
@@ -175,7 +214,7 @@ def classify(test_records, classifier):
         Postcondition: each record in test_records has the "prediction" key
                        filled in with the predicted class, either "M" or "B"
     """
-    # TODO 2 - implement this function
+
 
     for i in range(len(test_records)):
         malignant_vote = 0
@@ -189,6 +228,27 @@ def classify(test_records, classifier):
             test_records[i]["prediction"] = "M"
         else:
             test_records[i]["prediction"] = "B"
+
+def naive_bayes(training_records,training_labels,  testing_records):
+    #print(training_records)
+    # print(np.vstack(training_records))
+    #print(training_labels)
+    encode = pre.LabelEncoder()
+    encoded_labels = encode.fit_transform(training_records)
+    X_train = np.column_stack(encoded_labels)
+    Y = np.array(training_labels)
+    print(Y.shape())
+
+    #print(X_train)
+    #print(len(X_train[0]))
+    # print(len(Y[0]))
+    clf = MultinomialNB()
+    clf.fit(X_train, Y)
+    X_ttest = X_train
+    
+    Y_tpred = clf.predict(X_ttest)
+    print(Y_tpred)
+
         
 def id_classify(test_records, classifier, ID, i, index):
     """A more specific classifier that gives the vote on a single attribute
@@ -207,7 +267,6 @@ def report_accuracy(test_records):
         Precondition: each record in the test set has a "prediction"
         key that maps to the predicted class label ("M" or "B"), as well
         as a "class" key that maps to the true class label. """
-    # TODO 3 - implement this function
     accurate = 0
     total = len(test_records)
     for i in range(len(test_records)):
@@ -229,7 +288,7 @@ def chart(test_records, classifier, ID,index):
         print((ATTRS[i]).rjust(15), "{:.4f}".format(test_records[index][ATTRS[i]]).rjust(10), "{:.4f}".format(classifier[ATTRS[i]]).rjust(10), id_classify(test_records, classifier, ID, i, index).rjust(10))
     print("Classifier's Diagnosis: ", test_records[index]["prediction"])
 
-
+   
 def check_patients(test_records, classifier):
     """ Repeatedly prompt the user for a Patient ID until the user
         enters "quit". For each patient ID entered, search the test
@@ -271,33 +330,35 @@ if __name__ == "__main__":
     # load the training set
      print("Reading in training data...")
      training_data_file = "cancerTrainingData.txt"
-     training_set = make_training_set(training_data_file)
+     training_set = make_data_list(training_data_file)
      print("Done reading training data.")
-    
     # load the test set 
      print("Reading in test data...")
      test_file = "cancerTestingData.txt"
-     test_set = make_test_set(test_file)
+     #test_set = make_test_set(test_file)
      print("Done reading test data.\n")
 
-    # train the classifier: uncomment this block once you've
-    # implemented train_classifier
-     print("Training classifier..."    )
-     classifier = train_classifier(training_set)
-     print("Classifier cutoffs:")
-     for key in ATTRS[1:11]:
-         print("    ", key, ": ", classifier[key], sep="")
-     print("Done training classifier.\n")
+     naive_bayes(training_set[0], training_set[1],training_set[0] )
+    
 
-    # use the classifier to make predictions on the test set:
-    # uncomment the following block once you've written classify
-    # and report_accuracy
-     print("Making predictions and reporting accuracy")
-     classify(test_set, classifier)
-     report_accuracy(test_set)
-     print("Done classifying.\n")
+    # # train the classifier: uncomment this block once you've
+    # # implemented train_classifier
+    #  print("Training classifier..."    )
+    #  classifier = train_classifier(training_set)
+    #  print("Classifier cutoffs:")
+    #  for key in ATTRS[1:11]:
+    #      print("    ", key, ": ", classifier[key], sep="")
+    #  print("Done training classifier.\n")
 
-    # prompt the user for patient IDs and provide details on
-    # the diagnosis: uncomment this line when you've
-    # implemented check_patients
-     check_patients(test_set, classifier)
+    # # use the classifier to make predictions on the test set:
+    # # uncomment the following block once you've written classify
+    # # and report_accuracy
+    #  print("Making predictions and reporting accuracy")
+    #  classify(test_set, classifier)
+    #  report_accuracy(test_set)
+    #  print("Done classifying.\n")
+
+    # # prompt the user for patient IDs and provide details on
+    # # the diagnosis: uncomment this line when you've
+    # # implemented check_patients
+    #  check_patients(test_set, classifier)
